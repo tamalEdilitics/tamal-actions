@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch all branches
-        run: git fetch --prune --unshallow
+        run: git fetch --prune
 
       - name: Install dependencies
         run: npm install --ignore-scripts
