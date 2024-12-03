@@ -3,7 +3,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
     branches:
-      - main
+      - main  # Ensure this is the correct base branch
 
 jobs:
   lint:
@@ -12,35 +12,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Ensure full history for proper diff comparison
 
       - name: Fetch all branches
-        run: git fetch --prune
+        run: git fetch --prune  # Fetch all branches and updates
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm install --ignore-scripts  # Avoid running husky in CI
 
-      - name: Get changed files
-        id: changed-files
-        run: echo "$(git diff --name-only --diff-filter=d origin/main...HEAD)" > changed_files.txt
-
-      - name: Lint changed files
-        run: |
-          files=$(cat changed_files.txt | grep -E '\.(js|jsx|ts|tsx)$' || true)
-          if [ -n "$files" ]; then
-            echo "Running ESLint on the following files:"
-            echo "$files"
-            npx eslint $files
-          else
-            echo "No JavaScript/TypeScript files changed."
-          fi
-
-      - name: Generate ESLint Report
-        run: |
-          files=$(cat changed_files.txt | grep -E '\.(js|jsx|ts|tsx)$' || true)
-          if [ -n "$files" ]; then
-            npx eslint $files > eslint-report.txt || true
-          fi
+      - name: Run lint-staged
+        run: npx lint-staged --diff="main...test/lint"
 
       - name: Upload ESLint Report
         uses: actions/upload-artifact@v3
