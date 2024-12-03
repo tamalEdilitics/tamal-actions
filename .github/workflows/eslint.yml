@@ -4,12 +4,43 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - main
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with: { fetch-depth: 0 }
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: ESLint & Prettier
-        run: npx lint-staged --diff=origin/main
+      - name: Install dependencies
+        run: npm install
+
+      - name: Get changed files
+        id: changed-files
+        run: echo "$(git diff --name-only origin/main...HEAD)" > changed_files.txt
+
+      - name: Lint changed files
+        run: |
+          files=$(cat changed_files.txt | grep -E '\.(js|jsx|ts|tsx)$' || true)
+          if [ -n "$files" ]; then
+            echo "Running ESLint on the following files:"
+            echo "$files"
+            npx eslint $files
+          else
+            echo "No JavaScript/TypeScript files changed."
+          fi
+
+      - name: Generate ESLint Report
+        run: |
+          files=$(cat changed_files.txt | grep -E '\.(js|jsx|ts|tsx)$' || true)
+          if [ -n "$files" ]; then
+            npx eslint $files > eslint-report.txt || true
+          fi
+
+      - name: Upload ESLint Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: eslint-report
+          path: eslint-report.txt
