@@ -5,7 +5,7 @@ import viteLogo from "/vite.svg";
 
 function App() {
   const [count, setCount] = useState(0);
-  const wtfGiveErrorBro = "This should give an error";
+  const wtfGivesadasdasdadErrorBro = "This should give an error";
 
   return (
     <>
